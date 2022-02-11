@@ -1,0 +1,21 @@
+version: '3'
+services:
+  go:
+    build: .
+    volumes:
+      - ./:/go/go_handson/
+    ports:
+      - "50510:50510"
+    env_file:
+      - .env
+    tty: true
+  pgsql:
+    image: postgres:12.3-alpine
+    env_file: 
+      - .env
+    volumes:
+      - ./db/:/var/lib/postgresql/data/
+  testpg:
+    image: postgres:12.3-alpine
+    env_file:
+      - .env
