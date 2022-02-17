@@ -1,10 +1,7 @@
 package main
 
 import (
-	"strconv"
-
 	"fyne.io/fyne/app"
-	"fyne.io/fyne/theme"
 	"fyne.io/fyne/widget"
 )
 
@@ -13,18 +10,20 @@ func main() {
 
 	w := a.NewWindow("Hello")
 	l := widget.NewLabel("Hello Fyne!")
-	e := widget.NewEntry()
-	e.SetText("0")
-	w.SetContent(widget.NewVBox(
-		l,
-		e,
-		widget.NewButton("Click me!", func() {
-			n, _ := strconv.Atoi(e.Text)
-			l.SetText("Total: " + strconv.Itoa(total(n)))
-		}),
-	))
+	c := widget.NewCheck("Check!", func(f bool) {
+		if f {
+			l.SetText("CHECKED!")
+		} else {
+			l.SetText("not checked.")
+		}
+	})
+	w.SetContent(
+		widget.NewVBox(
+			l,
+			c,
+		),
+	)
 
-	a.Settings().SetTheme(theme.LightTheme())
 	w.ShowAndRun()
 }
 
