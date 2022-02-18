@@ -15,15 +15,18 @@ func main() {
 	w := a.NewWindow("Hello")
 	l := widget.NewLabel("Hello Fyne!")
 
+	e := widget.NewEntry()
 	b := widget.NewButton("Click", func() {
-		dialog.ShowConfirm(
-			"Alert",
-			"Please check 'YES'!",
+		dialog.ShowCustomConfirm(
+			"Enter message.",
+			"OK",
+			"Cancel",
+			e,
 			func(f bool) {
 				if f {
-					l.SetText("OK, thank you !")
+					l.SetText("typed: '" + e.Text + "'.")
 				} else {
-					l.SetText("oh no...")
+					l.SetText("no message.")
 				}
 			},
 			w,
