@@ -1,6 +1,8 @@
 package main
 
 import (
+	"strconv"
+
 	"fyne.io/fyne/app"
 	"fyne.io/fyne/widget"
 )
@@ -10,20 +12,16 @@ func main() {
 
 	w := a.NewWindow("Hello")
 	l := widget.NewLabel("Hello Fyne!")
-	r := widget.NewRadio(
-		[]string{"One", "Two", "Three"},
-		func(s string) {
-			if s == "" {
-				l.SetText("not selected.")
-			} else {
-				l.SetText("selected: " + s)
-			}
-		},
-	)
+	s := widget.NewSlider(0.0, 100.0)
+	b := widget.NewButton("Check", func() {
+		l.SetText("value: " + strconv.Itoa(int(s.Value)))
+	})
+
 	w.SetContent(
 		widget.NewVBox(
 			l,
-			r,
+			s,
+			b,
 		),
 	)
 
