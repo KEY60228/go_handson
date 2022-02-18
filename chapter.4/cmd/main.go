@@ -1,132 +1,156 @@
 package main
 
 import (
-	"strconv"
+	"io/ioutil"
+	"os"
 
 	"fyne.io/fyne"
 	"fyne.io/fyne/app"
+	"fyne.io/fyne/dialog"
 	"fyne.io/fyne/layout"
+	"fyne.io/fyne/theme"
 	"fyne.io/fyne/widget"
 )
 
-type cdata struct {
-	mem int
-	cal string
-	flg bool
-}
-
-func createNumButtons(f func(v int)) *fyne.Container {
-	c := fyne.NewContainerWithLayout(
-		layout.NewGridLayout(3),
-		widget.NewButton(strconv.Itoa(7), func() { f(7) }),
-		widget.NewButton(strconv.Itoa(8), func() { f(8) }),
-		widget.NewButton(strconv.Itoa(9), func() { f(9) }),
-		widget.NewButton(strconv.Itoa(4), func() { f(4) }),
-		widget.NewButton(strconv.Itoa(5), func() { f(5) }),
-		widget.NewButton(strconv.Itoa(6), func() { f(6) }),
-		widget.NewButton(strconv.Itoa(1), func() { f(1) }),
-		widget.NewButton(strconv.Itoa(2), func() { f(2) }),
-		widget.NewButton(strconv.Itoa(3), func() { f(3) }),
-		widget.NewButton(strconv.Itoa(0), func() { f(0) }),
-	)
-	return c
-}
-
-func createClacButtons(f func(c string)) *fyne.Container {
-	c := fyne.NewContainerWithLayout(
-		layout.NewGridLayout(1),
-		widget.NewButton("CL", func() { f("CL") }),
-		widget.NewButton("/", func() { f("/") }),
-		widget.NewButton("*", func() { f("*") }),
-		widget.NewButton("+", func() { f("+") }),
-		widget.NewButton("-", func() { f("-") }),
-	)
-	return c
-}
-
 func main() {
 	a := app.New()
-	w := a.NewWindow("Calc")
-	w.SetFixedSize(true)
+	a.Settings().SetTheme(theme.DarkTheme())
+	w := a.NewWindow("Editor")
 
-	l := widget.NewLabel("0")
-	l.Alignment = fyne.TextAlignTrailing
+	edit := widget.NewEntry()
+	edit.MultiLine = true
+	sc := widget.NewScrollContainer(edit)
+	inf := widget.NewLabel("infomation bar.")
 
-	data := cdata{
-		mem: 0,
-		cal: "",
-		flg: false,
+	nf := func() {
+		dialog.ShowConfirm("Alert", "Create New Document?", func(f bool) {
+			if f {
+				edit.SetText("")
+				inf.SetText("create new document.")
+			}
+		}, w)
 	}
 
-	calc := func(n int) {
-		switch data.cal {
-		case "":
-			data.mem = n
-		case "+":
-			data.mem += n
-		case "-":
-			data.mem -= n
-		case "*":
-			data.mem *= n
-		case "/":
-			data.mem /= n
-		}
-		l.SetText(strconv.Itoa(data.mem))
-		data.flg = true
+	of := func() {
+		f := widget.NewEntry()
+		dialog.ShowCustomConfirm("Open file name.", "OK", "Cancel", f, func(b bool) {
+			if b {
+				fn := f.Text + ".txt"
+				ba, err := ioutil.ReadFile(fn)
+				if err != nil {
+					dialog.ShowError(err, w)
+				} else {
+					edit.SetText(string(ba))
+					inf.SetText("Open from file '" + fn + "'.")
+				}
+			}
+		}, w)
 	}
 
-	pushNum := func(v int) {
-		s := l.Text
-		if data.flg {
-			s = "0"
-			data.flg = false
-		}
-		s += strconv.Itoa(v)
-		n, err := strconv.Atoi(s)
-		if err == nil {
-			l.SetText(strconv.Itoa(n))
-		}
+	sf := func() {
+		f := widget.NewEntry()
+		dialog.ShowCustomConfirm("Save file name.", "OK", "Cancel", f, func(b bool) {
+			if b {
+				fn := f.Text + ".txt"
+				err := ioutil.WriteFile(fn, []byte(edit.Text), os.ModePerm)
+				if err != nil {
+					dialog.ShowError(err, w)
+					return
+				}
+				inf.SetText("Save to file '" + fn + "'.")
+			}
+		}, w)
 	}
 
-	pushCalc := func(c string) {
-		if c == "CL" {
-			l.SetText("0")
-			data.mem = 0
-			data.flg = false
-			data.cal = ""
-			return
-		}
-		n, err := strconv.Atoi(l.Text)
-		if err != nil {
-			return
-		}
-		calc(n)
-		data.cal = c
+	qf := func() {
+		dialog.ShowConfirm("Alert", "Quit Application?", func(f bool) {
+			if f {
+				a.Quit()
+			}
+		}, w)
 	}
 
-	pushEnter := func() {
-		n, err := strconv.Atoi(l.Text)
-		if err != nil {
-			return
+	tf := true
+
+	cf := func() {
+		if tf {
+			a.Settings().SetTheme(theme.LightTheme())
+			inf.SetText("change to Light-Theme")
+		} else {
+			a.Settings().SetTheme(theme.DarkTheme())
+			inf.SetText("change to Dark-Theme")
 		}
-		calc(n)
-		data.cal = ""
+		tf = !tf
 	}
 
-	k := createNumButtons(pushNum)
-	c := createClacButtons(pushCalc)
-	e := widget.NewButton("Enter", pushEnter)
+	createMenubar := func() *fyne.MainMenu {
+		return fyne.NewMainMenu(
+			fyne.NewMenu(
+				"File",
+				fyne.NewMenuItem("New", func() {
+					nf()
+				}),
+				fyne.NewMenuItem("Open...", func() {
+					of()
+				}),
+				fyne.NewMenuItem("Save...", func() {
+					sf()
+				}),
+				fyne.NewMenuItem("Change Theme", func() {
+					cf()
+				}),
+				fyne.NewMenuItem("Quite", func() {
+					qf()
+				}),
+			),
+			fyne.NewMenu(
+				"Edit",
+				fyne.NewMenuItem("Cut", func() {
+					edit.TypedShortcut(&fyne.ShortcutCut{Clipboard: w.Clipboard()})
+					inf.SetText("Cut text.")
+				}),
+				fyne.NewMenuItem("Copy", func() {
+					edit.TypedShortcut(&fyne.ShortcutCopy{Clipboard: w.Clipboard()})
+					inf.SetText("Copy text.")
+				}),
+				fyne.NewMenuItem("Paste", func() {
+					edit.TypedShortcut(&fyne.ShortcutPaste{Clipboard: w.Clipboard()})
+					inf.SetText("Paste text.")
+				}),
+			),
+		)
+	}
 
+	createToolbar := func() *widget.Toolbar {
+		return widget.NewToolbar(
+			widget.NewToolbarAction(
+				theme.DocumentCreateIcon(),
+				func() { nf() },
+			),
+			widget.NewToolbarAction(
+				theme.FolderOpenIcon(),
+				func() { of() },
+			),
+			widget.NewToolbarAction(
+				theme.DocumentSaveIcon(),
+				func() { sf() },
+			),
+		)
+	}
+
+	mb := createMenubar()
+	tb := createToolbar()
+
+	w.SetMainMenu(mb)
 	w.SetContent(
 		fyne.NewContainerWithLayout(
-			layout.NewBorderLayout(l, e, nil, c),
-			l,
-			e,
-			k,
-			c,
+			layout.NewBorderLayout(tb, inf, nil, nil),
+			tb,
+			inf,
+			sc,
 		),
 	)
 
-	w.Resize(fyne.NewSize(300, 200))
+	w.Resize(fyne.NewSize(500, 500))
 	w.ShowAndRun()
 }
