@@ -16,7 +16,18 @@ func main() {
 	l := widget.NewLabel("Hello Fyne!")
 
 	b := widget.NewButton("Click", func() {
-		dialog.ShowInformation("Alert", "This is sample alert!", w)
+		dialog.ShowConfirm(
+			"Alert",
+			"Please check 'YES'!",
+			func(f bool) {
+				if f {
+					l.SetText("OK, thank you !")
+				} else {
+					l.SetText("oh no...")
+				}
+			},
+			w,
+		)
 	})
 
 	w.SetContent(
