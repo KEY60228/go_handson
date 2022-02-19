@@ -3,15 +3,21 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"net/http"
 )
 
 func main() {
-	fs, err := ioutil.ReadDir(".")
+	p := "https://golang.org"
+	re, err := http.Get(p)
+	if err != nil {
+		panic(err)
+	}
+	defer re.Body.Close()
+
+	s, err := ioutil.ReadAll(re.Body)
 	if err != nil {
 		panic(err)
 	}
 
-	for _, f := range fs {
-		fmt.Println(f.Name(), "(", f.Size(), ")")
-	}
+	fmt.Println(string(s))
 }
