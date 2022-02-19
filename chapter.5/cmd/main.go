@@ -10,18 +10,16 @@ func main() {
 	wt := func(f *os.File, s string) {
 		_, err := f.WriteString(s + "\n")
 		if err != nil {
-			fmt.Println(err)
-			f.Close()
-			return
+			panic(err)
 		}
 	}
 	fn := "data.txt"
 
 	f, err := os.OpenFile(fn, os.O_APPEND|os.O_CREATE|os.O_WRONLY, os.ModePerm)
 	if err != nil {
-		fmt.Println(err)
-		return
+		panic(err)
 	}
+	defer f.Close()
 
 	fmt.Println("*** start ***")
 	wt(f, "*** start ***")
