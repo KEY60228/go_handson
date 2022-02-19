@@ -2,22 +2,25 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
+
+	"github.com/PuerkitoBio/goquery"
 )
 
 func main() {
-	p := "https://golang.org"
-	re, err := http.Get(p)
+	res, err := http.Get("https://golang.org")
 	if err != nil {
 		panic(err)
 	}
-	defer re.Body.Close()
+	defer res.Body.Close()
 
-	s, err := ioutil.ReadAll(re.Body)
+	doc, err := goquery.NewDocumentFromReader(res.Body)
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println(string(s))
+	doc.Find("a").Each(func(n int, sel *goquery.Selection) {
+		lk, _ := sel.Attr("href")
+		fmt.Println(n, sel.Text(), "(", lk, ")")
+	})
 }
