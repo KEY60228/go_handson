@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"database/sql"
 	"fmt"
 	"os"
@@ -28,18 +29,36 @@ func main() {
 	}
 	defer conn.Close()
 
-	q := "SELECT * FROM mydata"
-	res, err := conn.Query(q)
-	if err != nil {
-		panic(err)
-	}
+	q := "SELECT * FROM mydata WHERE id = $1"
 
-	for res.Next() {
-		var md Mydata
-		err := res.Scan(&md.Id, &md.Name, &md.Mail, &md.Age)
+	for {
+		scanner := bufio.NewScanner(os.Stdin)
+		fmt.Print("ID: ")
+		scanner.Scan()
+		s := scanner.Text()
+		if s == "" {
+			break
+		}
+
+		n, err := strconv.Atoi(s)
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println(md.Str())
+
+		res, err := conn.Query(q, n)
+		if err != nil {
+			panic(err)
+		}
+
+		for res.Next() {
+			var md Mydata
+			err := res.Scan(&md.Id, &md.Name, &md.Mail, &md.Age)
+			if err != nil {
+				panic(err)
+			}
+			fmt.Println(md.Str())
+		}
 	}
+
+	fmt.Println("*** end ***")
 }
