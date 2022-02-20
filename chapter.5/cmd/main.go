@@ -1,42 +1,45 @@
 package main
 
 import (
-	"encoding/json"
+	"database/sql"
 	"fmt"
-	"io/ioutil"
-	"net/http"
+	"os"
+	"strconv"
+
+	_ "github.com/lib/pq"
 )
 
 type Mydata struct {
-	Name string `json:"name"`
-	Mail string `json:"mail"`
-	Tel  string `json:"tel"`
+	Id   int
+	Name string
+	Mail string
+	Age  int
 }
 
 func (m *Mydata) Str() string {
-	return "<\"" + m.Name + "\" " + m.Mail + ", " + m.Tel + ">"
+	return "<" + strconv.Itoa(m.Id) + ": \"" + m.Name + "\" " + m.Mail + ", " + strconv.Itoa(m.Age) + ">"
 }
 
 func main() {
-	res, err := http.Get("https://tuyano-dummy-data.firebaseio.com/mydata.json")
+	dsn := fmt.Sprintf("host=pgsql dbname=go_handson user=%s password=%s sslmode=disable", os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD"))
+	conn, err := sql.Open("postgres", dsn)
 	if err != nil {
 		panic(err)
 	}
-	defer res.Body.Close()
+	defer conn.Close()
 
-	s, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		panic(err)
-	}
-
-	var items []Mydata
-
-	err = json.Unmarshal(s, &items)
+	q := "SELECT * FROM mydata"
+	res, err := conn.Query(q)
 	if err != nil {
 		panic(err)
 	}
 
-	for i, im := range items {
-		fmt.Println(i, im.Str())
+	for res.Next() {
+		var md Mydata
+		err := res.Scan(&md.Id, &md.Name, &md.Mail, &md.Age)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(md.Str())
 	}
 }
