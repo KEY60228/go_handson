@@ -7,6 +7,16 @@ import (
 	"net/http"
 )
 
+type Mydata struct {
+	Name string `json:"name"`
+	Mail string `json:"mail"`
+	Tel  string `json:"tel"`
+}
+
+func (m *Mydata) Str() string {
+	return "<\"" + m.Name + "\" " + m.Mail + ", " + m.Tel + ">"
+}
+
 func main() {
 	res, err := http.Get("https://tuyano-dummy-data.firebaseio.com/mydata.json")
 	if err != nil {
@@ -19,15 +29,14 @@ func main() {
 		panic(err)
 	}
 
-	var data []interface{}
+	var items []Mydata
 
-	err = json.Unmarshal(s, &data)
+	err = json.Unmarshal(s, &items)
 	if err != nil {
 		panic(err)
 	}
 
-	for i, im := range data {
-		m := im.(map[string]interface{})
-		fmt.Println(i, m["name"].(string), m["mail"].(string), m["tel"].(string))
+	for i, im := range items {
+		fmt.Println(i, im.Str())
 	}
 }
