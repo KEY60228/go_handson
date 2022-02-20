@@ -45,19 +45,17 @@ func main() {
 			panic(err)
 		}
 
-		res, err := conn.Query(q, n)
+		res := conn.QueryRow(q, n)
 		if err != nil {
 			panic(err)
 		}
 
-		for res.Next() {
-			var md Mydata
-			err := res.Scan(&md.Id, &md.Name, &md.Mail, &md.Age)
-			if err != nil {
-				panic(err)
-			}
-			fmt.Println(md.Str())
+		var md Mydata
+		err = res.Scan(&md.Id, &md.Name, &md.Mail, &md.Age)
+		if err != nil {
+			panic(err)
 		}
+		fmt.Println(md.Str())
 	}
 
 	fmt.Println("*** end ***")
