@@ -1,26 +1,33 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
-
-	"github.com/PuerkitoBio/goquery"
 )
 
 func main() {
-	res, err := http.Get("https://golang.org")
+	res, err := http.Get("https://tuyano-dummy-data.firebaseio.com/mydata.json")
 	if err != nil {
 		panic(err)
 	}
 	defer res.Body.Close()
 
-	doc, err := goquery.NewDocumentFromReader(res.Body)
+	s, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		panic(err)
 	}
 
-	doc.Find("a").Each(func(n int, sel *goquery.Selection) {
-		lk, _ := sel.Attr("href")
-		fmt.Println(n, sel.Text(), "(", lk, ")")
-	})
+	var data []interface{}
+
+	err = json.Unmarshal(s, &data)
+	if err != nil {
+		panic(err)
+	}
+
+	for i, im := range data {
+		m := im.(map[string]interface{})
+		fmt.Println(i, m["name"].(string), m["mail"].(string), m["tel"].(string))
+	}
 }
