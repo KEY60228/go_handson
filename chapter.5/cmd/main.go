@@ -36,13 +36,31 @@ func main() {
 	}
 	defer conn.Close()
 
-	nm := input("name")
-	ml := input("mail")
-	age, _ := strconv.Atoi(input("age"))
+	id, _ := strconv.Atoi(input("update ID"))
 
-	q := "INSERT INTO mydata (name, mail, age) VALUES ($1, $2, $3)"
+	q := "SELECT * FROM mydata WHERE id = $1"
 
-	conn.Exec(q, nm, ml, age)
+	row := conn.QueryRow(q, id)
+	target := mydatafmrw(row)
+
+	nm := input("name(" + target.Name + ")")
+	ml := input("mail(" + target.Mail + ")")
+	inputAge := input("age(" + strconv.Itoa(target.Age) + ")")
+
+	age, _ := strconv.Atoi(inputAge)
+	if nm == "" {
+		nm = target.Name
+	}
+	if ml == "" {
+		ml = target.Mail
+	}
+	if inputAge == "" {
+		age = target.Age
+	}
+
+	q = "UPDATE mydata SET name = $1, mail = $2, age = $3 WHERE id = $4"
+	conn.Exec(q, nm, ml, age, id)
+
 	showRecord(conn)
 }
 
@@ -55,6 +73,15 @@ func showRecord(conn *sql.DB) {
 }
 
 func mydatafmrws(res *sql.Rows) *Mydata {
+	var md Mydata
+	err := res.Scan(&md.Id, &md.Name, &md.Mail, &md.Age)
+	if err != nil {
+		panic(err)
+	}
+	return &md
+}
+
+func mydatafmrw(res *sql.Row) *Mydata {
 	var md Mydata
 	err := res.Scan(&md.Id, &md.Name, &md.Mail, &md.Age)
 	if err != nil {
