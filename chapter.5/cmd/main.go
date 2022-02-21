@@ -21,6 +21,13 @@ func (m *Mydata) Str() string {
 	return "<" + strconv.Itoa(m.Id) + ": \"" + m.Name + "\" " + m.Mail + ", " + strconv.Itoa(m.Age) + ">"
 }
 
+func input(s string) string {
+	scanner := bufio.NewScanner(os.Stdin)
+	fmt.Print(s, ":")
+	scanner.Scan()
+	return scanner.Text()
+}
+
 func main() {
 	dsn := fmt.Sprintf("host=pgsql dbname=go_handson user=%s password=%s sslmode=disable", os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD"))
 	conn, err := sql.Open("postgres", dsn)
@@ -29,34 +36,29 @@ func main() {
 	}
 	defer conn.Close()
 
-	q := "SELECT * FROM mydata WHERE id = $1"
+	nm := input("name")
+	ml := input("mail")
+	age, _ := strconv.Atoi(input("age"))
 
-	for {
-		scanner := bufio.NewScanner(os.Stdin)
-		fmt.Print("ID: ")
-		scanner.Scan()
-		s := scanner.Text()
-		if s == "" {
-			break
-		}
+	q := "INSERT INTO mydata (name, mail, age) VALUES ($1, $2, $3)"
 
-		n, err := strconv.Atoi(s)
-		if err != nil {
-			panic(err)
-		}
+	conn.Exec(q, nm, ml, age)
+	showRecord(conn)
+}
 
-		res := conn.QueryRow(q, n)
-		if err != nil {
-			panic(err)
-		}
-
-		var md Mydata
-		err = res.Scan(&md.Id, &md.Name, &md.Mail, &md.Age)
-		if err != nil {
-			panic(err)
-		}
-		fmt.Println(md.Str())
+func showRecord(conn *sql.DB) {
+	q := "SELECT * FROM mydata"
+	res, _ := conn.Query(q)
+	for res.Next() {
+		fmt.Println(mydatafmrws(res).Str())
 	}
+}
 
-	fmt.Println("*** end ***")
+func mydatafmrws(res *sql.Rows) *Mydata {
+	var md Mydata
+	err := res.Scan(&md.Id, &md.Name, &md.Mail, &md.Age)
+	if err != nil {
+		panic(err)
+	}
+	return &md
 }
