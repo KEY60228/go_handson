@@ -14,3 +14,12 @@ INSERT INTO mydata (name, mail, age) VALUES (
 ), (
     'Jiro', 'jiro@change.com', 6
 );
+
+CREATE TABLE md_data (
+    id SERIAL PRIMARY KEY,
+    title TEXT NOT NULL,
+    url TEXT NOT NULL,
+    markdown TEXT
+);
+
+CREATE TABLE md_data ( id SERIAL PRIMARY KEY, title TEXT NOT NULL, url TEXT NOT NULL, markdown TEXT);
