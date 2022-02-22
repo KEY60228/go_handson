@@ -43,23 +43,13 @@ func main() {
 	row := conn.QueryRow(q, id)
 	target := mydatafmrw(row)
 
-	nm := input("name(" + target.Name + ")")
-	ml := input("mail(" + target.Mail + ")")
-	inputAge := input("age(" + strconv.Itoa(target.Age) + ")")
+	fmt.Println(target.Str())
+	f := input("delete this? (y/n)")
 
-	age, _ := strconv.Atoi(inputAge)
-	if nm == "" {
-		nm = target.Name
+	if f == "y" {
+		q = "DELETE FROM mydata WHERE id = $1"
+		conn.Exec(q, id)
 	}
-	if ml == "" {
-		ml = target.Mail
-	}
-	if inputAge == "" {
-		age = target.Age
-	}
-
-	q = "UPDATE mydata SET name = $1, mail = $2, age = $3 WHERE id = $4"
-	conn.Exec(q, nm, ml, age, id)
 
 	showRecord(conn)
 }
