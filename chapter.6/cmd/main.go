@@ -7,12 +7,7 @@ import (
 )
 
 func main() {
-	html := `<html><body>
-	<h1>Hello</h1>
-	<p>This is sample message.</p>
-	</body></html>`
-
-	tf, err := template.New("index").Parse(html)
+	tf, err := template.ParseFiles("templates/hello.html")
 	if err != nil {
 		log.Fatal(err)
 	}
