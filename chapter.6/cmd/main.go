@@ -46,7 +46,15 @@ func index(w http.ResponseWriter, r *http.Request, tmp *template.Template) {
 }
 
 func hello(w http.ResponseWriter, r *http.Request, tmp *template.Template) {
-	err := tmp.Execute(w, nil)
+	item := struct {
+		Title   string
+		Message string
+	}{
+		Title:   "Send values",
+		Message: "This is Sample message.",
+	}
+
+	err := tmp.Execute(w, item)
 	if err != nil {
 		log.Fatal(err)
 	}
