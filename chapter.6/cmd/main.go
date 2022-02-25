@@ -46,17 +46,14 @@ func index(w http.ResponseWriter, r *http.Request, tmp *template.Template) {
 }
 
 func hello(w http.ResponseWriter, r *http.Request, tmp *template.Template) {
-	var flg bool
 	item := struct {
-		Flg      bool
-		Title    string
-		Message  string
-		JMessage string
+		Title   string
+		Message string
+		Items   []string
 	}{
-		Flg:      flg,
-		Title:    "Send values",
-		Message:  "This is Sample message.",
-		JMessage: "これはサンプルです",
+		Title:   "Send values",
+		Message: "This is Sample message.",
+		Items:   []string{"One", "Two", "Three"},
 	}
 
 	err := tmp.Execute(w, item)
