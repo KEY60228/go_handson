@@ -49,11 +49,9 @@ func hello(w http.ResponseWriter, r *http.Request, tmp *template.Template) {
 	item := struct {
 		Title   string
 		Message string
-		Items   []string
 	}{
 		Title:   "Send values",
 		Message: "This is Sample message.",
-		Items:   []string{"One", "Two", "Three"},
 	}
 
 	err := tmp.Execute(w, item)
