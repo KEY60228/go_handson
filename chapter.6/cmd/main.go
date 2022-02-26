@@ -46,12 +46,16 @@ func index(w http.ResponseWriter, r *http.Request, tmp *template.Template) {
 }
 
 func hello(w http.ResponseWriter, r *http.Request, tmp *template.Template) {
+	id := r.FormValue("id")
+	name := r.FormValue("name")
+	msg := "id: " + id + ", Name: " + name
+
 	item := struct {
 		Title   string
 		Message string
 	}{
 		Title:   "Send values",
-		Message: "This is Sample message.",
+		Message: msg,
 	}
 
 	err := tmp.Execute(w, item)
