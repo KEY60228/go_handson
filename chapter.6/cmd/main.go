@@ -22,79 +22,47 @@ func notemp() *template.Template {
 	return tmp
 }
 
-func setupTemp() *Temps {
-	temps := &Temps{}
-
-	temps.notemp = notemp()
-
-	index, err := template.ParseFiles("templates/index.html")
-	if err != nil {
-		index = temps.notemp
-	}
-	temps.index = index
-
-	hello, err := template.ParseFiles("templates/hello.html")
-	if err != nil {
-		hello = temps.notemp
-	}
-	temps.hello = hello
-
-	return temps
+func page(fname string) *template.Template {
+	tmps, _ := template.ParseFiles("templates/"+fname+".html", "templates/head.html", "templates/foot.html")
+	return tmps
 }
 
-func index(w http.ResponseWriter, r *http.Request, tmp *template.Template) {
-	err := tmp.Execute(w, nil)
+func index(w http.ResponseWriter, r *http.Request) {
+	item := struct {
+		Template string
+		Title    string
+		Message  string
+	}{
+		Template: "index",
+		Title:    "Index",
+		Message:  "This is Top page.",
+	}
+
+	err := page("index").Execute(w, item)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-func hello(w http.ResponseWriter, r *http.Request, tmp *template.Template) {
-	msg := "login name and password: "
-
-	ses, _ := cs.Get(r, "hello-session")
-
-	if r.Method == "POST" {
-		ses.Values["login"] = nil
-		ses.Values["name"] = nil
-
-		name := r.PostFormValue("name")
-		pw := r.PostFormValue("password")
-		if name == pw {
-			ses.Values["login"] = true
-			ses.Values["name"] = name
-		}
-		ses.Save(r, w)
-	}
-
-	flg, _ := ses.Values["login"].(bool)
-	lname, _ := ses.Values["name"].(string)
-	if flg {
-		msg = "logined: " + lname
-	}
+func hello(w http.ResponseWriter, r *http.Request) {
+	data := []string{"One", "Two", "Three"}
 
 	item := struct {
-		Title   string
-		Message string
+		Title string
+		Data  []string
 	}{
-		Title:   "Send values",
-		Message: msg,
+		Title: "Send values",
+		Data:  data,
 	}
 
-	err := tmp.Execute(w, item)
+	err := page("hello").Execute(w, item)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
 func main() {
-	temps := setupTemp()
-
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		index(w, r, temps.index)
-	})
-	http.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
-		hello(w, r, temps.hello)
-	})
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) { index(w, r) })
+	http.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) { hello(w, r) })
 	http.ListenAndServe(":50510", nil)
 }
