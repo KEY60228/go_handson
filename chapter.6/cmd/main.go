@@ -4,7 +4,11 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+
+	"github.com/gorilla/sessions"
 )
+
+var cs *sessions.CookieStore = sessions.NewCookieStore([]byte("secret-key-12345"))
 
 type Temps struct {
 	notemp *template.Template
@@ -46,12 +50,27 @@ func index(w http.ResponseWriter, r *http.Request, tmp *template.Template) {
 }
 
 func hello(w http.ResponseWriter, r *http.Request, tmp *template.Template) {
-	msg := "type name and password: "
+	msg := "login name and password: "
+
+	ses, _ := cs.Get(r, "hello-session")
 
 	if r.Method == "POST" {
+		ses.Values["login"] = nil
+		ses.Values["name"] = nil
+
 		name := r.PostFormValue("name")
 		pw := r.PostFormValue("password")
-		msg = "name: " + name + ", password: " + pw
+		if name == pw {
+			ses.Values["login"] = true
+			ses.Values["name"] = name
+		}
+		ses.Save(r, w)
+	}
+
+	flg, _ := ses.Values["login"].(bool)
+	lname, _ := ses.Values["name"].(string)
+	if flg {
+		msg = "logined: " + lname
 	}
 
 	item := struct {
