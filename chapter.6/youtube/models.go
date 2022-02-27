@@ -34,7 +34,7 @@ type Comment struct {
 	Message string
 }
 
-type CommnetJoin struct {
+type CommentJoin struct {
 	Comment
 	User
 	Post

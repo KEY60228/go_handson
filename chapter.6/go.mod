@@ -3,11 +3,13 @@ module go_handson/chapter.6
 go 1.17
 
 require (
+	github.com/gorilla/sessions v1.2.1
 	gorm.io/driver/postgres v1.3.1
 	gorm.io/gorm v1.23.1
 )
 
 require (
+	github.com/gorilla/securecookie v1.1.1 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgconn v1.10.1 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect
