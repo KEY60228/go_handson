@@ -1,0 +1,7 @@
+{{ template "header" }}
+<ul class="list-group">
+    {{ range $n, $item := .Data }}
+        <li class="list-group-item">{{ $item }}</li>
+    {{ end }}
+</ul>
+{{ template "footer" }}
